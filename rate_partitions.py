@@ -60,62 +60,54 @@ def run(infile, divnum):
         Ltest = num_chars - partitioned_sites_count
 
         if Ltest <= cutoff:  # for last partition to include all the rest
-
             lower_value = min_rate
 
-            BinL = []
-
+            sites = []
             i = 1
             for rate in input_data:
                 if upper_value > rate >= lower_value:
-                    BinL.append(i)
+                    sites.append(i)
                 i += 1
 
             nBins += 1
 
         elif partition == 1:  # for first partition
-
             lower_value = upper_value - ((upper_value - min_rate) / (divnum))
 
-            BinL = []
-
+            sites = []
             i = 1
-
-            for n in input_data:
-
-                if upper_value >= n > lower_value:
-                    BinL.append(i)
-
+            for rate in input_data:
+                if upper_value >= rate > lower_value:
+                    sites.append(i)
                 i += 1
 
             nBins += 1
 
         else:  # for all other partitions than the last
-
             lower_value = upper_value - ((upper_value - min_rate) / (divnum + partition * 0.3))
 
-            BinL = []
+            sites = []
             i = 1
             for rate in input_data:
                 if upper_value >= rate > lower_value:
-                    BinL.append(i)
+                    sites.append(i)
                 i += 1
 
             nBins += 1
 
-        partitioned_sites_count += len(BinL)  # for total site count
+        partitioned_sites_count += len(sites)  # for total site count
 
         # info for output in file and screen
 
         output_info += "\nPartition_{}({} sites):	Rate-span: {}-{}\n".format(
-            partition, len(BinL), round(upper_value, 6), round(lower_value, 6))  # , BinL
+            partition, len(sites), round(upper_value, 6), round(lower_value, 6))  # , BinL
 
-        print("Partition_{} ({} sites): ".format(partition, len(BinL)))
+        print("Partition_{} ({} sites): ".format(partition, len(sites)))
         print("Rate-span: {0:.5f}-{0:.5f}\n".format(upper_value, lower_value))
 
-        if len(BinL) > 0:
+        if sites:
             # setting the output for phylip partitions
-            charset = clean_string(str(BinL))
+            charset = clean_string(str(sites))
 
             output = "DNA, Partition_{} = {}".format(partition, charset)
             output = clean_string(output)
@@ -123,7 +115,7 @@ def run(infile, divnum):
             output_phy += "\n" + output
 
             # setting the output format for charsets as MrBayes partitions
-            charset = clean_string(str(BinL), additional_char=",")
+            charset = clean_string(str(sites), additional_char=",")
 
             output = "\nCharset Partition_{} = {};".format(partition, charset)
 
