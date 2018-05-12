@@ -27,6 +27,7 @@ The output file will be named after the input values: inputfilename_divfactor.tx
 """
 import argparse
 import os
+import re
 import sys
 
 
@@ -113,15 +114,10 @@ def run(infile, divnum):
 
         # info for output in file and screen
 
-        oi = ["Partition_", str(b), "(", str(len(BinL)),
-              " sites):	Rate-span: ", str(round(upper_value, 6)), "-",
-              str(round(lowerVal, 6))]  # , BinL
+        oi = "\nPartition_{}({} sites):	Rate-span: {}-{}\n".format(
+            b, len(BinL), round(upper_value, 6), round(lowerVal, 6))  # , BinL
 
-        oi = ''.join(oi)
-
-        output_info.append(oi)
-
-        output_info.append('')
+        output_info += oi
 
         pout = ["Partition_", str(b), " (", str(len(BinL)), " sites): "]
 
@@ -177,29 +173,23 @@ def run(infile, divnum):
     if partitioned_sites_count != num_chars:
         print("Total sites paritioned is not identical to imported sites!:", partitioned_sites_count, " vs ", num_chars)
 
-        oi = ["Total sites paritioned is not identical to imported sites!:",
-              str(partitioned_sites_count), " vs ", str(num_chars)]
-
-        oi = ''.join(oi)
-
-        output_info.append(oi)
+        oi = "Total sites paritioned is not identical to imported sites!:{} vs {}".format(
+             partitioned_sites_count, num_chars)
+        output_info += oi
 
     # fixing partition finishing for output
     # mrb partitioning
-    listB = []
+    listB = ""
     for b in range(1, nBins + 1):
-        bapp = ["Partition_", str(b)]
+        bapp = "Partition_{}, ".format(b)
+        listB += bapp
+    listB = re.sub(", $", "", listB)
 
-        bapp = ''.join(bapp)
-
-        listB.append(bapp)
-    listB = ', '.join(listB)
-    out_finish = ["partition Partitions = ", str(nBins), ": ", listB, ";"]
-    out_finish = ''.join(out_finish)
+    out_finish = "partition Partitions = {}: {};".format(nBins, listB)
     output_mrb.append(out_finish)
     output_mrb.append("set partition = Partitions;")
     # collecting outputs
-    output_fin1 = '\n'.join(output_info)
+    output_fin1 = output_info
     output_fin2 = '\n'.join(output_mrb)
     output_fin3 = '\n'.join(output_phy)
     output_finished = [output_fin1, output_fin2, output_fin3]
@@ -223,7 +213,7 @@ def make_output_description(divnum, infile_basename, cutoff, max_rate,
     output += "\nRate spread of entire data set (Highest (slowest, 1=invariant) to " \
           "lowest (fastest) ): Highest: {}, lowest: {}, spread: {}".format(
         max_rate, min_rate, spread)
-    return [output]
+    return output
 
 
 def clean_string(text, additional_char=None):
