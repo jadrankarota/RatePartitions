@@ -32,18 +32,6 @@ import sys
 
 def run(infile, divnum):
     """Executes computations and returns contents to be written in output file"""
-    try:
-        divnum = float(divnum)
-    except ValueError:
-        print("You need to enter factor for division as positive numerical value "
-              "(greater or equal than 1.1)")
-        sys.exit(1)
-
-    if (divnum < 1.1):
-        print("You need to enter factor for division as positive numerical value "
-              "(greater or equal than 1.1)")
-        sys.exit(1)
-
     input_data = read_input_file(infile)
     infile_basename = os.path.basename(infile)
     
@@ -276,6 +264,23 @@ def write_output_file(output_data, infile, divnum):
     outwrite.write(output_data)
 
 
+def clean_divnum(divnum):
+    """Check that dinum is greater than value 1"""
+    try:
+        divnum = float(divnum)
+    except ValueError:
+        print(
+            "You need to enter factor for division as positive numerical value "
+            "(greater or equal than 1.1)")
+        sys.exit(1)
+    if (divnum < 1.1):
+        print(
+            "You need to enter factor for division as positive numerical value "
+            "(greater or equal than 1.1)")
+        sys.exit(1)
+    return divnum
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -296,6 +301,8 @@ def main():
     args = parser.parse_args()
     infile = args.rate_file_txt
     divnum = args.divfactor
+
+    divnum = clean_divnum(divnum)
 
     output_data = run(infile, divnum)
     write_output_file(output_data, infile, divnum)
