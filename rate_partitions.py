@@ -55,30 +55,27 @@ def run(infile, divnum):
     output_info = make_output_description(
         divnum, infile_basename, cutoff, max_rate, min_rate, num_chars, spread)
     nBins = 0
-    for b in range(1, 100):
+    for partition in range(1, 100):
 
         Ltest = num_chars - partitioned_sites_count
 
         if Ltest <= cutoff:  # for last partition to include all the rest
 
-            lowerVal = min_rate
+            lower_value = min_rate
 
             BinL = []
 
             i = 1
-
-            for n in input_data:
-
-                if upper_value > n >= lowerVal:
+            for rate in input_data:
+                if upper_value > rate >= lower_value:
                     BinL.append(i)
-
                 i += 1
 
             nBins += 1
 
-        elif b == 1:  # for first partition
+        elif partition == 1:  # for first partition
 
-            lowerVal = upper_value - ((upper_value - min_rate) / (divnum))
+            lower_value = upper_value - ((upper_value - min_rate) / (divnum))
 
             BinL = []
 
@@ -86,7 +83,7 @@ def run(infile, divnum):
 
             for n in input_data:
 
-                if upper_value >= n > lowerVal:
+                if upper_value >= n > lower_value:
                     BinL.append(i)
 
                 i += 1
@@ -95,17 +92,13 @@ def run(infile, divnum):
 
         else:  # for all other partitions than the last
 
-            lowerVal = upper_value - ((upper_value - min_rate) / (divnum + b * 0.3))
+            lower_value = upper_value - ((upper_value - min_rate) / (divnum + partition * 0.3))
 
             BinL = []
-
             i = 1
-
-            for n in input_data:
-
-                if upper_value >= n > lowerVal:
+            for rate in input_data:
+                if upper_value >= rate > lower_value:
                     BinL.append(i)
-
                 i += 1
 
             nBins += 1
@@ -115,38 +108,28 @@ def run(infile, divnum):
         # info for output in file and screen
 
         output_info += "\nPartition_{}({} sites):	Rate-span: {}-{}\n".format(
-            b, len(BinL), round(upper_value, 6), round(lowerVal, 6))  # , BinL
+            partition, len(BinL), round(upper_value, 6), round(lower_value, 6))  # , BinL
 
-        pout = "Partition_{} ({} sites): ".format(b, len(BinL))
-        print(pout)
-        pout = "Rate-span: {0:.5f}-{0:.5f}\n".format(upper_value, lowerVal)
-        print(pout)
+        print("Partition_{} ({} sites): ".format(partition, len(BinL)))
+        print("Rate-span: {0:.5f}-{0:.5f}\n".format(upper_value, lower_value))
 
         if len(BinL) > 0:
-
             # setting the output for phylip partitions
+            charset = clean_string(str(BinL))
 
-            charset = str(BinL)
-
-            charset = clean_string(charset)
-
-            output = "DNA, Partition_{} = {}".format(b, charset)
-
+            output = "DNA, Partition_{} = {}".format(partition, charset)
             output = clean_string(output)
 
             output_phy += "\n" + output
 
             # setting the output format for charsets as MrBayes partitions
+            charset = clean_string(str(BinL), additional_char=",")
 
-            charset = str(BinL)
-
-            charset = clean_string(charset, additional_char=",")
-
-            output = "\nCharset Partition_{} = {};".format(b, charset)
+            output = "\nCharset Partition_{} = {};".format(partition, charset)
 
             output_mrb += clean_string(output, additional_char=",")
 
-        upper_value = lowerVal  # resetting the upper range value to the current lower value (for next bin)
+        upper_value = lower_value  # resetting the upper range value to the current lower value (for next bin)
 
         # breaking loop on last partition
 
@@ -155,17 +138,16 @@ def run(infile, divnum):
 
     # more info
     if partitioned_sites_count != num_chars:
-        print("Total sites paritioned is not identical to imported sites!:",
-              partitioned_sites_count, " vs ", num_chars)
-
-        output_info += "Total sites paritioned is not identical to imported " \
-                       "sites!:{} vs {}".format(partitioned_sites_count, num_chars)
+        msg = "Total sites partitioned is not identical to imported " \
+              "sites!:{} vs {}".format(partitioned_sites_count, num_chars)
+        print(msg)
+        output_info += msg
 
     # fixing partition finishing for output
     # mrb partitioning
     listB = ""
-    for b in range(1, nBins + 1):
-        bapp = "Partition_{}, ".format(b)
+    for partition in range(1, nBins + 1):
+        bapp = "Partition_{}, ".format(partition)
         listB += bapp
     listB = re.sub(", $", "", listB)
 
@@ -173,10 +155,7 @@ def run(infile, divnum):
     output_mrb += out_finish
     output_mrb += "\nset partition = Partitions;"
     # collecting outputs
-    output_fin1 = output_info
-    output_fin2 = output_mrb
-    output_fin3 = output_phy
-    output_finished = [output_fin1, output_fin2, output_fin3]
+    output_finished = [output_info, output_mrb, output_phy]
     output_finished = '\n\n\n'.join(output_finished)
     return output_finished
 
