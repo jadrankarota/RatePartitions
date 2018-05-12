@@ -13,6 +13,7 @@ class TestFunctions(TestCase):
     def test_read_input_file(self):
         result = read_input_file(self.input_file)
         self.assertIn(0.222972, result)
+        self.assertEqual(4000, len(result))
 
     @patch("rate_partitions.sys.exit")
     def test_verify_divnum__bad_input(self, mock_sys):

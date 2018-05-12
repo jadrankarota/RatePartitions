@@ -35,23 +35,25 @@ def run(infile, divnum):
     input_data = read_input_file(infile)
     infile_basename = os.path.basename(infile)
     
-    maxL = max(input_data)
-    minL = min(input_data)
-    numchars = len(input_data)
-    print("\nTotal data - {} sites.\n".format(numchars))
-    print("Slowest rate: {}".format(maxL))
-    print("Fastest rate: {}".format(minL))
-    spread = maxL - minL
+    max_rate = max(input_data)
+    min_rate = min(input_data)
+    num_chars = len(input_data)
+    print("\nTotal data - {} sites.\n".format(num_chars))
+    print("Slowest rate: {}".format(max_rate))
+    print("Fastest rate: {}".format(min_rate))
+
+    spread = max_rate - min_rate
     print("Rate spread: {}\n".format(spread))
+
     # setting values for partitioning
-    upperVal = maxL
+    upper_value = max_rate
     t = 0  # total partitioned sites count
-    cutoff = numchars * 0.10  # cutoff value for creating last partition
+    cutoff = num_chars * 0.10  # cutoff value for creating last partition
     output_phy = ["PHYLIP  style"]
     output_mrb = ["MrBayes style\nbegin mrbayes;"]
     oi = [
         "Partition output from ratepartitions.py\n--Written by Tobias Malm (20121130)\n\nFor rate file: ",
-        infile_basename, " with ", str(numchars), " sites!"]
+        infile_basename, " with ", str(num_chars), " sites!"]
     oi = ''.join(oi)
     output_info = [oi, '']
     oi = ["Manually set dividing factor: ", str(divnum)]
@@ -71,17 +73,17 @@ def run(infile, divnum):
     output_info.append('')
     oi = [
         "Rate spread of entire data set (Highest (slowest, 1=invariant) to lowest (fastest) ): Highest: ",
-        str(maxL), ", lowest: ", str(minL), ", spread: ", str(spread)]
+        str(max_rate), ", lowest: ", str(min_rate), ", spread: ", str(spread)]
     oi = ''.join(oi)
     output_info.append(oi)
     nBins = 0
     for b in range(1, 100):
 
-        Ltest = numchars - t
+        Ltest = num_chars - t
 
         if (Ltest <= cutoff):  # for last partition to include all the rest
 
-            lowerVal = minL
+            lowerVal = min_rate
 
             BinL = []
 
@@ -89,7 +91,7 @@ def run(infile, divnum):
 
             for n in input_data:
 
-                if (upperVal > n >= lowerVal):
+                if (upper_value > n >= lowerVal):
                     BinL.append(i)
 
                 i += 1
@@ -98,7 +100,7 @@ def run(infile, divnum):
 
         elif (b == 1):  # for first partition
 
-            lowerVal = upperVal - ((upperVal - minL) / (divnum))
+            lowerVal = upper_value - ((upper_value - min_rate) / (divnum))
 
             BinL = []
 
@@ -106,7 +108,7 @@ def run(infile, divnum):
 
             for n in input_data:
 
-                if (upperVal >= n > lowerVal):
+                if (upper_value >= n > lowerVal):
                     BinL.append(i)
 
                 i += 1
@@ -115,7 +117,7 @@ def run(infile, divnum):
 
         else:  # for all other partitions than the last
 
-            lowerVal = upperVal - ((upperVal - minL) / (divnum + b * 0.3))
+            lowerVal = upper_value - ((upper_value - min_rate) / (divnum + b * 0.3))
 
             BinL = []
 
@@ -123,7 +125,7 @@ def run(infile, divnum):
 
             for n in input_data:
 
-                if (upperVal >= n > lowerVal):
+                if (upper_value >= n > lowerVal):
                     BinL.append(i)
 
                 i += 1
@@ -135,7 +137,7 @@ def run(infile, divnum):
         # info for output in file and screen
 
         oi = ["Partition_", str(b), "(", str(len(BinL)),
-              " sites):	Rate-span: ", str(round(upperVal, 6)), "-",
+              " sites):	Rate-span: ", str(round(upper_value, 6)), "-",
               str(round(lowerVal, 6))]  # , BinL
 
         oi = ''.join(oi)
@@ -150,7 +152,7 @@ def run(infile, divnum):
 
         print(pout)
 
-        pout = ["Rate-span: ", str("{0:.5f}".format(upperVal)), "-",
+        pout = ["Rate-span: ", str("{0:.5f}".format(upper_value)), "-",
                 str("{0:.5f}".format(lowerVal)), "\n"]
 
         pout = ''.join(pout)
@@ -195,7 +197,7 @@ def run(infile, divnum):
 
             output_mrb.append(output)
 
-        upperVal = lowerVal  # resetting the upper range value to the current lower value (for next bin)
+        upper_value = lowerVal  # resetting the upper range value to the current lower value (for next bin)
 
         # breaking loop on last partition
 
@@ -203,11 +205,11 @@ def run(infile, divnum):
             break
 
     # more info
-    if (t != numchars):
-        print("Total sites paritioned is not identical to imported sites!:", t, " vs ", numchars)
+    if (t != num_chars):
+        print("Total sites paritioned is not identical to imported sites!:", t, " vs ", num_chars)
 
         oi = ["Total sites paritioned is not identical to imported sites!:",
-              str(t), " vs ", str(numchars)]
+              str(t), " vs ", str(num_chars)]
 
         oi = ''.join(oi)
 
@@ -237,35 +239,32 @@ def run(infile, divnum):
 
 
 def read_input_file(infile):
-    # opening file
-    f = open(infile, "r")
-    lines = f.readlines()
-    f.close()
-    # reading rates lines into List
-    List = []
-    i = 1
-    for Line in lines:
+    with open(infile, "r") as handle:
+        lines = handle.readlines()
 
-        LineX = Line.strip()
+        # reading rates lines into List
+        rate_values = []
 
-        if (LineX != ""):
-            List.append(float(LineX))
+        for line in lines:
+            clean_line = line.strip()
+            if clean_line:
+                rate_values.append(float(clean_line))
 
-            i += 1
-    return List
+        return rate_values
 
 
 def write_output_file(output_data, infile, divnum):
     # opening outfile and writing to it
-    outfile = [infile, "_", str(divnum), ".txt"]
-    outfile = ''.join(outfile)
-    print("Output file with rate partition summary and MrBayes and PHYLIP partition schemes has been created: ", outfile)
-    outwrite = open(outfile, "w")  # open output file
-    outwrite.write(output_data)
+    outfile = "{}_{}.txt".format(infile, divnum)
+    print("Output file with rate partition summary and MrBayes and PHYLIP "
+          "partition schemes has been created: {}".format(outfile))
+
+    with open(outfile, "w") as handle:
+        handle.write(output_data)
 
 
 def verify_divnum(divnum):
-    """Check that dinum is greater than value 1"""
+    """Check that dinum is greater or equal than value 1.1"""
     error_msg = "You need to enter factor for division as positive numerical " \
                 "value (greater or equal than 1.1)"
     if divnum < 1.1:
