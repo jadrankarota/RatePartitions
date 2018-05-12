@@ -86,7 +86,7 @@ def run(infile, divnum):
 
             for n in input_data:
 
-                if (upper_value >= n > lowerVal):
+                if upper_value >= n > lowerVal:
                     BinL.append(i)
 
                 i += 1
@@ -103,7 +103,7 @@ def run(infile, divnum):
 
             for n in input_data:
 
-                if (upper_value >= n > lowerVal):
+                if upper_value >= n > lowerVal:
                     BinL.append(i)
 
                 i += 1
@@ -114,22 +114,12 @@ def run(infile, divnum):
 
         # info for output in file and screen
 
-        oi = "\nPartition_{}({} sites):	Rate-span: {}-{}\n".format(
+        output_info += "\nPartition_{}({} sites):	Rate-span: {}-{}\n".format(
             b, len(BinL), round(upper_value, 6), round(lowerVal, 6))  # , BinL
 
-        output_info += oi
-
-        pout = ["Partition_", str(b), " (", str(len(BinL)), " sites): "]
-
-        pout = ''.join(pout)
-
+        pout = "Partition_{} ({} sites): ".format(b, len(BinL))
         print(pout)
-
-        pout = ["Rate-span: ", str("{0:.5f}".format(upper_value)), "-",
-                str("{0:.5f}".format(lowerVal)), "\n"]
-
-        pout = ''.join(pout)
-
+        pout = "Rate-span: {0:.5f}-{0:.5f}\n".format(upper_value, lowerVal)
         print(pout)
 
         if len(BinL) > 0:
@@ -140,9 +130,7 @@ def run(infile, divnum):
 
             charset = clean_string(charset)
 
-            output = ["DNA, Partition_", str(b), " = ", charset]
-
-            output = ''.join(output)
+            output = "DNA, Partition_{} = {}".format(b, charset)
 
             output = clean_string(output)
 
@@ -154,9 +142,7 @@ def run(infile, divnum):
 
             charset = clean_string(charset, additional_char=",")
 
-            output = ["Charset Partition_", str(b), " = ", charset, ";"]
-
-            output = ''.join(output)
+            output = "Charset Partition_{} = {};".format(b, charset)
 
             output = clean_string(output, additional_char=",")
 
@@ -171,11 +157,11 @@ def run(infile, divnum):
 
     # more info
     if partitioned_sites_count != num_chars:
-        print("Total sites paritioned is not identical to imported sites!:", partitioned_sites_count, " vs ", num_chars)
+        print("Total sites paritioned is not identical to imported sites!:",
+              partitioned_sites_count, " vs ", num_chars)
 
-        oi = "Total sites paritioned is not identical to imported sites!:{} vs {}".format(
-             partitioned_sites_count, num_chars)
-        output_info += oi
+        output_info += "Total sites paritioned is not identical to imported " \
+                       "sites!:{} vs {}".format(partitioned_sites_count, num_chars)
 
     # fixing partition finishing for output
     # mrb partitioning
