@@ -50,8 +50,8 @@ def run(infile, divnum):
     upper_value = max_rate
     partitioned_sites_count = 0  # total partitioned sites count
     cutoff = num_chars * 0.1  # cutoff value for creating last partition
-    output_phy = ["PHYLIP  style"]
-    output_mrb = ["MrBayes style\nbegin mrbayes;"]
+    output_phy = "PHYLIP  style"
+    output_mrb = "MrBayes style\nbegin mrbayes;"
     output_info = make_output_description(
         divnum, infile_basename, cutoff, max_rate, min_rate, num_chars, spread)
     nBins = 0
@@ -134,7 +134,7 @@ def run(infile, divnum):
 
             output = clean_string(output)
 
-            output_phy.append(output)
+            output_phy += "\n" + output
 
             # setting the output format for charsets as MrBayes partitions
 
@@ -142,11 +142,9 @@ def run(infile, divnum):
 
             charset = clean_string(charset, additional_char=",")
 
-            output = "Charset Partition_{} = {};".format(b, charset)
+            output = "\nCharset Partition_{} = {};".format(b, charset)
 
-            output = clean_string(output, additional_char=",")
-
-            output_mrb.append(output)
+            output_mrb += clean_string(output, additional_char=",")
 
         upper_value = lowerVal  # resetting the upper range value to the current lower value (for next bin)
 
@@ -171,13 +169,13 @@ def run(infile, divnum):
         listB += bapp
     listB = re.sub(", $", "", listB)
 
-    out_finish = "partition Partitions = {}: {};".format(nBins, listB)
-    output_mrb.append(out_finish)
-    output_mrb.append("set partition = Partitions;")
+    out_finish = "\npartition Partitions = {}: {};".format(nBins, listB)
+    output_mrb += out_finish
+    output_mrb += "\nset partition = Partitions;"
     # collecting outputs
     output_fin1 = output_info
-    output_fin2 = '\n'.join(output_mrb)
-    output_fin3 = '\n'.join(output_phy)
+    output_fin2 = output_mrb
+    output_fin3 = output_phy
     output_finished = [output_fin1, output_fin2, output_fin3]
     output_finished = '\n\n\n'.join(output_finished)
     return output_finished
