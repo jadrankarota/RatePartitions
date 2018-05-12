@@ -51,29 +51,8 @@ def run(infile, divnum):
     cutoff = num_chars * 0.1  # cutoff value for creating last partition
     output_phy = ["PHYLIP  style"]
     output_mrb = ["MrBayes style\nbegin mrbayes;"]
-    oi = "Partition output from ratepartitions.py\n--Written by Tobias Malm " \
-         "(20121130)\n\nFor rate file: {} with {} sites!".format(infile_basename, num_chars)
-    output_info = [oi, '']
-    oi = ["Manually set dividing factor: ", str(divnum)]
-    oi = ''.join(oi)
-    output_info.append(oi)
-    oi = [
-        "Partitions calculated according to:\n\t1st partition: highest rate - ((highest rate - minimum_rate)/(",
-        str(divnum),
-        ")),\n\tthe remaining as lower boundary rate= upper boundary rate -((upper boundary rate - minimum rate)/(",
-        str(divnum), "+Partitionnumber*0.3)).\n"]
-    oi.append(
-        "\tLast partition created when less than 10% of total characters are left (=")
-    oi.append(str(cutoff))
-    oi.append(" characters).")
-    oi = ''.join(oi)
-    output_info.append(oi)
-    output_info.append('')
-    oi = [
-        "Rate spread of entire data set (Highest (slowest, 1=invariant) to lowest (fastest) ): Highest: ",
-        str(max_rate), ", lowest: ", str(min_rate), ", spread: ", str(spread)]
-    oi = ''.join(oi)
-    output_info.append(oi)
+    output_info = make_output_description(
+        divnum, infile_basename, cutoff, max_rate, min_rate, num_chars, spread)
     nBins = 0
     for b in range(1, 100):
 
@@ -226,6 +205,25 @@ def run(infile, divnum):
     output_finished = [output_fin1, output_fin2, output_fin3]
     output_finished = '\n\n\n'.join(output_finished)
     return output_finished
+
+
+def make_output_description(divnum, infile_basename, cutoff, max_rate,
+                            min_rate, num_chars, spread):
+    """Generate text for output for section that describes method"""
+    output = "Partition output from ratepartitions.py\n--Written by Tobias Malm " \
+         "(20121130)\n\nFor rate file: {} with {} sites!\n".format(
+        infile_basename, num_chars)
+    output += "\nManually set dividing factor: {}\n".format(divnum)
+    output += "Partitions calculated according to:\n\t1st partition: highest " \
+          "rate - ((highest rate - minimum_rate)/({0})),\n\tthe remaining as " \
+          "lower boundary rate= upper boundary rate -((upper boundary rate - " \
+          "minimum rate)/({0}+Partitionnumber*0.3)).\n".format(divnum)
+    output += "\tLast partition created when less than 10% of total characters " \
+          "are left (={} characters).\n".format(cutoff)
+    output += "\nRate spread of entire data set (Highest (slowest, 1=invariant) to " \
+          "lowest (fastest) ): Highest: {}, lowest: {}, spread: {}".format(
+        max_rate, min_rate, spread)
+    return [output]
 
 
 def clean_string(text, additional_char=None):
