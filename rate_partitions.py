@@ -55,13 +55,12 @@ def run(infile, divnum):
     output_info = make_output_description(
         divnum, infile_basename, cutoff, max_rate, min_rate, num_chars, spread)
     bin_count = 0
+
     for partition in range(1, 100):
+        number_remaining_sites = num_chars - partitioned_sites_count
 
-        Ltest = num_chars - partitioned_sites_count
-
-        if Ltest <= cutoff:  # for last partition to include all the rest
+        if number_remaining_sites <= cutoff:  # for last partition to include all the rest
             lower_value = min_rate
-
             sites = []
             i = 1
             for rate in input_data:
@@ -84,32 +83,25 @@ def run(infile, divnum):
         # info for output in file and screen
 
         output_info += "\nPartition_{}({} sites):	Rate-span: {}-{}\n".format(
-            partition, len(sites), round(upper_value, 6), round(lower_value, 6))  # , BinL
+            partition, len(sites), round(upper_value, 6), round(lower_value, 6))
 
         print("Partition_{} ({} sites): ".format(partition, len(sites)))
         print("Rate-span: {0:.5f}-{0:.5f}\n".format(upper_value, lower_value))
 
         if sites:
             # setting the output for phylip partitions
-            charset = clean_string(str(sites))
-
+            charset = ", ".join([str(site) for site in sites])
             output = "DNA, Partition_{} = {}".format(partition, charset)
-            output = clean_string(output)
-
             output_phy += "\n" + output
 
             # setting the output format for charsets as MrBayes partitions
-            charset = clean_string(str(sites), additional_char=",")
-
-            output = "\nCharset Partition_{} = {};".format(partition, charset)
-
-            output_mrb += clean_string(output, additional_char=",")
+            charset = " ".join([str(site) for site in sites])
+            output_mrb += "\nCharset Partition_{} = {};".format(partition, charset)
 
         upper_value = lower_value  # resetting the upper range value to the current lower value (for next bin)
 
         # breaking loop on last partition
-
-        if Ltest <= cutoff:
+        if number_remaining_sites <= cutoff:
             break
 
     # more info
@@ -165,17 +157,6 @@ def make_output_description(divnum, infile_basename, cutoff, max_rate,
         max_rate, min_rate, spread)
     return output
 
-
-def clean_string(text, additional_char=None):
-    """Remove unwanted characters from our text"""
-    replace_list = ['[', ']', '  ', '\'']
-
-    if additional_char:
-        replace_list.append(additional_char)
-
-    for character in replace_list:
-        text = text.replace(character, '')
-    return text
 
 
 def read_input_file(infile):

@@ -2,7 +2,7 @@ import os
 from unittest import TestCase
 from mock import patch
 
-from rate_partitions import read_input_file, verify_divnum, clean_string
+from rate_partitions import read_input_file, verify_divnum
 
 
 class TestFunctions(TestCase):
@@ -32,13 +32,3 @@ class TestFunctions(TestCase):
         """
         verify_divnum(2.5)
         self.assertFalse(mock_sys.called)
-
-    def test_clean_string(self):
-        result = clean_string("this text,,[]'")
-        expected = "this text,,"
-        self.assertEqual(expected, result)
-
-    def test_clean_string__extra_char(self):
-        result = clean_string("this text,,[]'", additional_char=",")
-        expected = "this text"
-        self.assertEqual(expected, result)
