@@ -47,8 +47,8 @@ def run(infile, divnum):
 
     # setting values for partitioning
     upper_value = max_rate
-    t = 0  # total partitioned sites count
-    cutoff = num_chars * 0.10  # cutoff value for creating last partition
+    partitioned_sites_count = 0  # total partitioned sites count
+    cutoff = num_chars * 0.1  # cutoff value for creating last partition
     output_phy = ["PHYLIP  style"]
     output_mrb = ["MrBayes style\nbegin mrbayes;"]
     oi = [
@@ -79,7 +79,7 @@ def run(infile, divnum):
     nBins = 0
     for b in range(1, 100):
 
-        Ltest = num_chars - t
+        Ltest = num_chars - partitioned_sites_count
 
         if (Ltest <= cutoff):  # for last partition to include all the rest
 
@@ -132,7 +132,7 @@ def run(infile, divnum):
 
             nBins += 1
 
-        t += len(BinL)  # for total site count
+        partitioned_sites_count += len(BinL)  # for total site count
 
         # info for output in file and screen
 
@@ -165,17 +165,13 @@ def run(infile, divnum):
 
             charset = str(BinL)
 
-            replace_list = ['[', ']', '  ', '\'']
-
-            for rl in replace_list:
-                charset = charset.replace(rl, '')
+            charset = clean_string(charset)
 
             output = ["DNA, Partition_", str(b), " = ", charset]
 
             output = ''.join(output)
 
-            for rl in replace_list:
-                output = output.replace(rl, '')
+            output = clean_string(output)
 
             output_phy.append(output)
 
@@ -183,17 +179,13 @@ def run(infile, divnum):
 
             charset = str(BinL)
 
-            replace_list = [',', '[', ']', '  ', '\'']
-
-            for rl in replace_list:
-                charset = charset.replace(rl, '')
+            charset = clean_string(charset, additional_char=",")
 
             output = ["Charset Partition_", str(b), " = ", charset, ";"]
 
             output = ''.join(output)
 
-            for rl in replace_list:
-                output = output.replace(rl, '')
+            output = clean_string(output, additional_char=",")
 
             output_mrb.append(output)
 
@@ -205,11 +197,11 @@ def run(infile, divnum):
             break
 
     # more info
-    if (t != num_chars):
-        print("Total sites paritioned is not identical to imported sites!:", t, " vs ", num_chars)
+    if (partitioned_sites_count != num_chars):
+        print("Total sites paritioned is not identical to imported sites!:", partitioned_sites_count, " vs ", num_chars)
 
         oi = ["Total sites paritioned is not identical to imported sites!:",
-              str(t), " vs ", str(num_chars)]
+              str(partitioned_sites_count), " vs ", str(num_chars)]
 
         oi = ''.join(oi)
 
@@ -236,6 +228,18 @@ def run(infile, divnum):
     output_finished = [output_fin1, output_fin2, output_fin3]
     output_finished = '\n\n\n'.join(output_finished)
     return output_finished
+
+
+def clean_string(text, additional_char=None):
+    """Remove unwanted characters from our text"""
+    replace_list = ['[', ']', '  ', '\'']
+
+    if additional_char:
+        replace_list.append(additional_char)
+
+    for character in replace_list:
+        text = text.replace(character, '')
+    return text
 
 
 def read_input_file(infile):
