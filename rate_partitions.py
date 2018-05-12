@@ -61,12 +61,11 @@ def run(infile, divnum):
 
         if number_remaining_sites <= cutoff:  # for last partition to include all the rest
             lower_value = min_rate
+
             sites = []
-            i = 1
-            for rate in input_data:
+            for idx, rate in enumerate(input_data):
                 if upper_value > rate >= lower_value:
-                    sites.append(i)
-                i += 1
+                    sites.append(idx + 1)
 
         elif partition == 1:  # for first partition
             lower_value = upper_value - ((upper_value - min_rate) / divnum)
@@ -91,8 +90,7 @@ def run(infile, divnum):
         if sites:
             # setting the output for phylip partitions
             charset = ", ".join([str(site) for site in sites])
-            output = "DNA, Partition_{} = {}".format(partition, charset)
-            output_phy += "\n" + output
+            output_phy += "\nDNA, Partition_{} = {}".format(partition, charset)
 
             # setting the output format for charsets as MrBayes partitions
             charset = " ".join([str(site) for site in sites])
@@ -131,11 +129,9 @@ def run(infile, divnum):
 def generate_sites(input_data, lower_value, upper_value):
     """Generate a list of sites whose evolutionary rate is between upper and lower values"""
     sites = []
-    site_index = 1
-    for rate in input_data:
+    for idx, rate in enumerate(input_data):
         if upper_value >= rate > lower_value:
-            sites.append(site_index)
-        site_index += 1
+            sites.append(idx + 1)
     return sites
 
 
@@ -185,7 +181,7 @@ def write_output_file(output_data, infile, divnum):
 
 
 def verify_divnum(divnum):
-    """Check that dinum is greater or equal than value 1.1"""
+    """Check that divnum is greater or equal than value 1.1"""
     error_msg = "You need to enter factor for division as positive numerical " \
                 "value (greater or equal than 1.1)"
     if divnum < 1.1:
