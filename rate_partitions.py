@@ -264,21 +264,13 @@ def write_output_file(output_data, infile, divnum):
     outwrite.write(output_data)
 
 
-def clean_divnum(divnum):
+def verify_divnum(divnum):
     """Check that dinum is greater than value 1"""
-    try:
-        divnum = float(divnum)
-    except ValueError:
-        print(
-            "You need to enter factor for division as positive numerical value "
-            "(greater or equal than 1.1)")
+    error_msg = "You need to enter factor for division as positive numerical " \
+                "value (greater or equal than 1.1)"
+    if divnum < 1.1:
+        print(error_msg)
         sys.exit(1)
-    if (divnum < 1.1):
-        print(
-            "You need to enter factor for division as positive numerical value "
-            "(greater or equal than 1.1)")
-        sys.exit(1)
-    return divnum
 
 
 def main():
@@ -302,7 +294,7 @@ def main():
     infile = args.rate_file_txt
     divnum = args.divfactor
 
-    divnum = clean_divnum(divnum)
+    verify_divnum(divnum)
 
     output_data = run(infile, divnum)
     write_output_file(output_data, infile, divnum)
