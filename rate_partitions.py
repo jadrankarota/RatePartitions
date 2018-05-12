@@ -54,7 +54,7 @@ def run(infile, divnum):
     output_mrb = "MrBayes style\nbegin mrbayes;"
     output_info = make_output_description(
         divnum, infile_basename, cutoff, max_rate, min_rate, num_chars, spread)
-    nBins = 0
+    bin_count = 0
     for partition in range(1, 100):
 
         Ltest = num_chars - partitioned_sites_count
@@ -69,31 +69,15 @@ def run(infile, divnum):
                     sites.append(i)
                 i += 1
 
-            nBins += 1
-
         elif partition == 1:  # for first partition
-            lower_value = upper_value - ((upper_value - min_rate) / (divnum))
-
-            sites = []
-            i = 1
-            for rate in input_data:
-                if upper_value >= rate > lower_value:
-                    sites.append(i)
-                i += 1
-
-            nBins += 1
+            lower_value = upper_value - ((upper_value - min_rate) / divnum)
+            sites = generate_sites(input_data, lower_value, upper_value)
 
         else:  # for all other partitions than the last
             lower_value = upper_value - ((upper_value - min_rate) / (divnum + partition * 0.3))
+            sites = generate_sites(input_data, lower_value, upper_value)
 
-            sites = []
-            i = 1
-            for rate in input_data:
-                if upper_value >= rate > lower_value:
-                    sites.append(i)
-                i += 1
-
-            nBins += 1
+        bin_count += 1
 
         partitioned_sites_count += len(sites)  # for total site count
 
@@ -138,18 +122,29 @@ def run(infile, divnum):
     # fixing partition finishing for output
     # mrb partitioning
     listB = ""
-    for partition in range(1, nBins + 1):
+    for partition in range(1, bin_count + 1):
         bapp = "Partition_{}, ".format(partition)
         listB += bapp
     listB = re.sub(", $", "", listB)
 
-    out_finish = "\npartition Partitions = {}: {};".format(nBins, listB)
+    out_finish = "\npartition Partitions = {}: {};".format(bin_count, listB)
     output_mrb += out_finish
     output_mrb += "\nset partition = Partitions;"
     # collecting outputs
     output_finished = [output_info, output_mrb, output_phy]
     output_finished = '\n\n\n'.join(output_finished)
     return output_finished
+
+
+def generate_sites(input_data, lower_value, upper_value):
+    """Generate a list of sites whose evolutionary rate is between upper and lower values"""
+    sites = []
+    site_index = 1
+    for rate in input_data:
+        if upper_value >= rate > lower_value:
+            sites.append(site_index)
+        site_index += 1
+    return sites
 
 
 def make_output_description(divnum, infile_basename, cutoff, max_rate,
