@@ -51,10 +51,8 @@ def run(infile, divnum):
     cutoff = num_chars * 0.1  # cutoff value for creating last partition
     output_phy = ["PHYLIP  style"]
     output_mrb = ["MrBayes style\nbegin mrbayes;"]
-    oi = [
-        "Partition output from ratepartitions.py\n--Written by Tobias Malm (20121130)\n\nFor rate file: ",
-        infile_basename, " with ", str(num_chars), " sites!"]
-    oi = ''.join(oi)
+    oi = "Partition output from ratepartitions.py\n--Written by Tobias Malm " \
+         "(20121130)\n\nFor rate file: {} with {} sites!".format(infile_basename, num_chars)
     output_info = [oi, '']
     oi = ["Manually set dividing factor: ", str(divnum)]
     oi = ''.join(oi)
@@ -81,7 +79,7 @@ def run(infile, divnum):
 
         Ltest = num_chars - partitioned_sites_count
 
-        if (Ltest <= cutoff):  # for last partition to include all the rest
+        if Ltest <= cutoff:  # for last partition to include all the rest
 
             lowerVal = min_rate
 
@@ -91,14 +89,14 @@ def run(infile, divnum):
 
             for n in input_data:
 
-                if (upper_value > n >= lowerVal):
+                if upper_value > n >= lowerVal:
                     BinL.append(i)
 
                 i += 1
 
             nBins += 1
 
-        elif (b == 1):  # for first partition
+        elif b == 1:  # for first partition
 
             lowerVal = upper_value - ((upper_value - min_rate) / (divnum))
 
@@ -159,7 +157,7 @@ def run(infile, divnum):
 
         print(pout)
 
-        if (len(BinL) > 0):
+        if len(BinL) > 0:
 
             # setting the output for phylip partitions
 
@@ -193,11 +191,11 @@ def run(infile, divnum):
 
         # breaking loop on last partition
 
-        if (Ltest <= cutoff):
+        if Ltest <= cutoff:
             break
 
     # more info
-    if (partitioned_sites_count != num_chars):
+    if partitioned_sites_count != num_chars:
         print("Total sites paritioned is not identical to imported sites!:", partitioned_sites_count, " vs ", num_chars)
 
         oi = ["Total sites paritioned is not identical to imported sites!:",
