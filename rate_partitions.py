@@ -26,6 +26,7 @@ is the division factor (e.g. 1.35)
 The output file will be named after the input values: inputfilename_divfactor.txt
 """
 import argparse
+import os
 import sys
 
 
@@ -44,6 +45,7 @@ def run(infile, divnum):
         sys.exit(1)
 
     input_data = read_input_file(infile)
+    infile_basename = os.path.basename(infile)
     
     maxL = max(input_data)
     minL = min(input_data)
@@ -61,7 +63,7 @@ def run(infile, divnum):
     output_mrb = ["MrBayes style\nbegin mrbayes;"]
     oi = [
         "Partition output from ratepartitions.py\n--Written by Tobias Malm (20121130)\n\nFor rate file: ",
-        infile, " with ", str(numchars), " sites!"]
+        infile_basename, " with ", str(numchars), " sites!"]
     oi = ''.join(oi)
     output_info = [oi, '']
     oi = ["Manually set dividing factor: ", str(divnum)]

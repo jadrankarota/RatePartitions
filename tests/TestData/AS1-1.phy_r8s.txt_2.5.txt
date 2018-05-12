@@ -1,7 +1,7 @@
 Partition output from ratepartitions.py
 --Written by Tobias Malm (20121130)
 
-For rate file: TestData/AS1-1.phy_r8s.txt with 4000 sites!
+For rate file: AS1-1.phy_r8s.txt with 4000 sites!
 
 Manually set dividing factor: 2.5
 Partitions calculated according to:
