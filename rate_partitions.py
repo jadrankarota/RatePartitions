@@ -145,8 +145,8 @@ def run(infile, divnum):
         # info for output in file and screen
 
         oi = ["Partition_", str(b), "(", str(len(BinL)),
-              " sites):	Rate-span: ", str(upperVal), "-",
-              str(lowerVal)]  # , BinL
+              " sites):	Rate-span: ", str(round(upperVal, 6)), "-",
+              str(round(lowerVal, 6))]  # , BinL
 
         oi = ''.join(oi)
 

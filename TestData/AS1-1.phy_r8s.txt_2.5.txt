@@ -10,31 +10,31 @@ Partitions calculated according to:
 	Last partition created when less than 10% of total characters are left (=400.0 characters).
 
 Rate spread of entire data set (Highest (slowest, 1=invariant) to lowest (fastest) ): Highest: 1.0, lowest: 0.201592, spread: 0.798408
-Partition_1(1821 sites):	Rate-span: 1.0-0.6806368
+Partition_1(1821 sites):	Rate-span: 1.0-0.680637
 
-Partition_2(0 sites):	Rate-span: 0.6806368-0.526106219355
+Partition_2(0 sites):	Rate-span: 0.680637-0.526106
 
-Partition_3(0 sites):	Rate-span: 0.526106219355-0.430660860721
+Partition_3(0 sites):	Rate-span: 0.526106-0.430661
 
-Partition_4(0 sites):	Rate-span: 0.430660860721-0.368750357823
+Partition_4(0 sites):	Rate-span: 0.430661-0.36875
 
-Partition_5(678 sites):	Rate-span: 0.368750357823-0.326960768368
+Partition_5(678 sites):	Rate-span: 0.36875-0.326961
 
-Partition_6(22 sites):	Rate-span: 0.326960768368-0.29780524084
+Partition_6(22 sites):	Rate-span: 0.326961-0.297805
 
-Partition_7(347 sites):	Rate-span: 0.29780524084-0.276889318918
+Partition_7(347 sites):	Rate-span: 0.297805-0.276889
 
-Partition_8(172 sites):	Rate-span: 0.276889318918-0.261522519139
+Partition_8(172 sites):	Rate-span: 0.276889-0.261523
 
-Partition_9(166 sites):	Rate-span: 0.261522519139-0.249997419305
+Partition_9(166 sites):	Rate-span: 0.261523-0.249997
 
-Partition_10(186 sites):	Rate-span: 0.249997419305-0.241196433977
+Partition_10(186 sites):	Rate-span: 0.249997-0.241196
 
-Partition_11(115 sites):	Rate-span: 0.241196433977-0.234368083291
+Partition_11(115 sites):	Rate-span: 0.241196-0.234368
 
-Partition_12(128 sites):	Rate-span: 0.234368083291-0.228994954883
+Partition_12(128 sites):	Rate-span: 0.234368-0.228995
 
-Partition_13(365 sites):	Rate-span: 0.228994954883-0.201592
+Partition_13(365 sites):	Rate-span: 0.228995-0.201592
 
 
 
