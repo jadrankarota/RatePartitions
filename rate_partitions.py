@@ -36,14 +36,11 @@ def run(infile, divnum):
     input_data = read_input_file(infile)
     infile_basename = os.path.basename(infile)
     
-    max_rate = max(input_data)
-    min_rate = min(input_data)
-    num_chars = len(input_data)
+    max_rate, min_rate, num_chars = max(input_data), min(input_data), len(input_data)
+    spread = max_rate - min_rate
     print("\nTotal data - {} sites.\n".format(num_chars))
     print("Slowest rate: {}".format(max_rate))
     print("Fastest rate: {}".format(min_rate))
-
-    spread = max_rate - min_rate
     print("Rate spread: {}\n".format(spread))
 
     # setting values for partitioning
@@ -54,49 +51,28 @@ def run(infile, divnum):
     output_mrb = "MrBayes style\nbegin mrbayes;"
     output_info = make_output_description(
         divnum, infile_basename, cutoff, max_rate, min_rate, num_chars, spread)
-    bin_count = 0
 
+    bin_count = 0
     for partition in range(1, 100):
         number_remaining_sites = num_chars - partitioned_sites_count
-
-        if number_remaining_sites <= cutoff:  # for last partition to include all the rest
+        if number_remaining_sites <= cutoff:
+            # for last partition to include all the rest
             lower_value = min_rate
-
-            sites = []
-            for idx, rate in enumerate(input_data):
-                if upper_value > rate >= lower_value:
-                    sites.append(idx + 1)
-
-        elif partition == 1:  # for first partition
-            lower_value = upper_value - ((upper_value - min_rate) / divnum)
-            sites = generate_sites(input_data, lower_value, upper_value)
-
-        else:  # for all other partitions than the last
-            lower_value = upper_value - ((upper_value - min_rate) / (divnum + partition * 0.3))
-            sites = generate_sites(input_data, lower_value, upper_value)
-
-        bin_count += 1
-
-        partitioned_sites_count += len(sites)  # for total site count
+            sites = generate_sites_last_partition(input_data, lower_value, upper_value)
+        else:
+            sites, lower_value = generate_sites(input_data, partition, upper_value, min_rate, divnum)
 
         # info for output in file and screen
-
         output_info += "\nPartition_{}({} sites):	Rate-span: {}-{}\n".format(
             partition, len(sites), round(upper_value, 6), round(lower_value, 6))
-
         print("Partition_{} ({} sites): ".format(partition, len(sites)))
         print("Rate-span: {0:.5f}-{0:.5f}\n".format(upper_value, lower_value))
 
-        if sites:
-            # setting the output for phylip partitions
-            charset = ", ".join([str(site) for site in sites])
-            output_phy += "\nDNA, Partition_{} = {}".format(partition, charset)
-
-            # setting the output format for charsets as MrBayes partitions
-            charset = " ".join([str(site) for site in sites])
-            output_mrb += "\nCharset Partition_{} = {};".format(partition, charset)
-
+        output_mrb, output_phy = add_partitions_output(output_mrb, output_phy,
+                                                       partition, sites)
         upper_value = lower_value  # resetting the upper range value to the current lower value (for next bin)
+        partitioned_sites_count += len(sites)  # for total site count
+        bin_count += 1
 
         # breaking loop on last partition
         if number_remaining_sites <= cutoff:
@@ -109,30 +85,63 @@ def run(infile, divnum):
         print(msg)
         output_info += msg
 
-    # fixing partition finishing for output
-    # mrb partitioning
-    listB = ""
-    for partition in range(1, bin_count + 1):
-        bapp = "Partition_{}, ".format(partition)
-        listB += bapp
-    listB = re.sub(", $", "", listB)
-
-    out_finish = "\npartition Partitions = {}: {};".format(bin_count, listB)
+    # fixing partition finishing for output for MrBayes partitioning
+    partition_list = generate_partition_list(bin_count)
+    out_finish = "\npartition Partitions = {}: {};".format(bin_count, partition_list)
     output_mrb += out_finish
     output_mrb += "\nset partition = Partitions;"
+
     # collecting outputs
     output_finished = [output_info, output_mrb, output_phy]
     output_finished = '\n\n\n'.join(output_finished)
     return output_finished
 
 
-def generate_sites(input_data, lower_value, upper_value):
+def generate_partition_list(bin_count):
+    partitions = ""
+    for partition in range(1, bin_count + 1):
+        partition_string = "Partition_{}, ".format(partition)
+        partitions += partition_string
+    partitions = re.sub(", $", "", partitions)
+    return partitions
+
+
+def generate_sites(input_data, partition, upper_value, min_rate, divnum):
     """Generate a list of sites whose evolutionary rate is between upper and lower values"""
+    if partition == 1:
+        # for first partition
+        lower_value = upper_value - ((upper_value - min_rate) / divnum)
+    else:
+        # for all other partitions than the last
+        lower_value = upper_value - ((upper_value - min_rate) / (divnum + partition * 0.3))
+
     sites = []
     for idx, rate in enumerate(input_data):
         if upper_value >= rate > lower_value:
             sites.append(idx + 1)
+    return sites, lower_value
+
+
+def generate_sites_last_partition(input_data, lower_value, upper_value):
+    sites = []
+    for idx, rate in enumerate(input_data):
+        if upper_value > rate >= lower_value:
+            sites.append(idx + 1)
     return sites
+
+
+def add_partitions_output(output_mrb, output_phy, partition, sites):
+    """Adds to output the Partition line with partition number and list of characters"""
+    if sites:
+        # setting the output format for charsets as MrBayes partitions
+        charset = " ".join([str(site) for site in sites])
+        output_mrb += "\nCharset Partition_{} = {};".format(partition, charset)
+
+        # setting the output for phylip partitions
+        charset = ", ".join([str(site) for site in sites])
+        output_phy += "\nDNA, Partition_{} = {}".format(partition, charset)
+
+    return output_mrb, output_phy
 
 
 def make_output_description(divnum, infile_basename, cutoff, max_rate,
@@ -152,7 +161,6 @@ def make_output_description(divnum, infile_basename, cutoff, max_rate,
           "lowest (fastest) ): Highest: {}, lowest: {}, spread: {}".format(
         max_rate, min_rate, spread)
     return output
-
 
 
 def read_input_file(infile):
