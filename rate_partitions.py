@@ -31,7 +31,7 @@ import re
 import sys
 
 
-def run(infile, divnum):
+def run(infile, divfactor):
     """Executes computations and returns contents to be written in output file"""
     input_data = read_input_file(infile)
     infile_basename = os.path.basename(infile)
@@ -50,7 +50,7 @@ def run(infile, divnum):
     output_phy = "PHYLIP  style"
     output_mrb = "MrBayes style\nbegin mrbayes;"
     output_info = make_output_description(
-        divnum, infile_basename, cutoff, max_rate, min_rate, num_chars, spread)
+        divfactor, infile_basename, cutoff, max_rate, min_rate, num_chars, spread)
 
     bin_count = 0
     for partition in range(1, 100):
@@ -60,7 +60,7 @@ def run(infile, divnum):
             lower_value = min_rate
             sites = generate_sites_last_partition(input_data, lower_value, upper_value)
         else:
-            sites, lower_value = generate_sites(input_data, partition, upper_value, min_rate, divnum)
+            sites, lower_value = generate_sites(input_data, partition, upper_value, min_rate, divfactor)
 
         # info for output in file and screen
         output_info += "\nPartition_{}({} sites):	Rate-span: {}-{}\n".format(
@@ -106,14 +106,19 @@ def generate_partition_list(bin_count):
     return partitions
 
 
-def generate_sites(input_data, partition, upper_value, min_rate, divnum):
-    """Generate a list of sites whose evolutionary rate is between upper and lower values"""
+def generate_sites(input_data, partition, upper_value, min_rate, divfactor):
+    """Generate a list of sites whose evolutionary rate is between upper and lower values
+
+    This is the most important function. This function contains all the logic
+    to divide the characters in bins based on upper rate, minimum rate, partition
+    number and divfactor.
+    """
     if partition == 1:
         # for first partition
-        lower_value = upper_value - ((upper_value - min_rate) / divnum)
+        lower_value = upper_value - ((upper_value - min_rate) / divfactor)
     else:
-        # for all other partitions than the last
-        lower_value = upper_value - ((upper_value - min_rate) / (divnum + partition * 0.3))
+        # for all other partitions. other than the last one
+        lower_value = upper_value - ((upper_value - min_rate) / (divfactor + partition * 0.3))
 
     sites = []
     for idx, rate in enumerate(input_data):
@@ -123,6 +128,7 @@ def generate_sites(input_data, partition, upper_value, min_rate, divnum):
 
 
 def generate_sites_last_partition(input_data, lower_value, upper_value):
+    """Puts all remaining sites in a last bin"""
     sites = []
     for idx, rate in enumerate(input_data):
         if upper_value > rate >= lower_value:
@@ -144,17 +150,17 @@ def add_partitions_output(output_mrb, output_phy, partition, sites):
     return output_mrb, output_phy
 
 
-def make_output_description(divnum, infile_basename, cutoff, max_rate,
+def make_output_description(divfactor, infile_basename, cutoff, max_rate,
                             min_rate, num_chars, spread):
     """Generate text for output for section that describes method"""
     output = "Partition output from ratepartitions.py\n--Written by Tobias Malm " \
          "(20121130)\n\nFor rate file: {} with {} sites!\n".format(
         infile_basename, num_chars)
-    output += "\nManually set dividing factor: {}\n".format(divnum)
+    output += "\nManually set dividing factor: {}\n".format(divfactor)
     output += "Partitions calculated according to:\n\t1st partition: highest " \
           "rate - ((highest rate - minimum_rate)/({0})),\n\tthe remaining as " \
           "lower boundary rate= upper boundary rate -((upper boundary rate - " \
-          "minimum rate)/({0}+Partitionnumber*0.3)).\n".format(divnum)
+          "minimum rate)/({0}+Partitionnumber*0.3)).\n".format(divfactor)
     output += "\tLast partition created when less than 10% of total characters " \
           "are left (={} characters).\n".format(cutoff)
     output += "\nRate spread of entire data set (Highest (slowest, 1=invariant) to " \
@@ -178,9 +184,9 @@ def read_input_file(infile):
         return rate_values
 
 
-def write_output_file(output_data, infile, divnum):
+def write_output_file(output_data, infile, divfactor):
     # opening outfile and writing to it
-    outfile = "{}_{}.txt".format(infile, divnum)
+    outfile = "{}_{}.txt".format(infile, divfactor)
     print("Output file with rate partition summary and MrBayes and PHYLIP "
           "partition schemes has been created: {}".format(outfile))
 
@@ -188,11 +194,11 @@ def write_output_file(output_data, infile, divnum):
         handle.write(output_data)
 
 
-def verify_divnum(divnum):
-    """Check that divnum is greater or equal than value 1.1"""
+def verify_divfactor(divfactor):
+    """Check that divfactor is greater or equal than value 1.1"""
     error_msg = "You need to enter factor for division as positive numerical " \
                 "value (greater or equal than 1.1)"
-    if divnum < 1.1:
+    if divfactor < 1.1:
         print(error_msg)
         sys.exit(1)
 
@@ -216,12 +222,12 @@ def main():
 
     args = parser.parse_args()
     infile = args.rate_file_txt
-    divnum = args.divfactor
+    divfactor = args.divfactor
 
-    verify_divnum(divnum)
+    verify_divfactor(divfactor)
 
-    output_data = run(infile, divnum)
-    write_output_file(output_data, infile, divnum)
+    output_data = run(infile, divfactor)
+    write_output_file(output_data, infile, divfactor)
 
 
 if __name__ == "__main__":

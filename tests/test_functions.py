@@ -2,8 +2,8 @@ import os
 from unittest import TestCase
 from mock import patch
 
-from rate_partitions import read_input_file, verify_divnum, generate_sites, \
-    generate_sites_last_partition
+from rate_partitions import read_input_file, verify_divfactor, generate_sites, \
+    generate_sites_last_partition, add_partitions_output, generate_partition_list
 
 
 class TestFunctions(TestCase):
@@ -23,7 +23,7 @@ class TestFunctions(TestCase):
 
         We will exit with error and print a message for the user
         """
-        verify_divnum(0.001)
+        verify_divfactor(0.001)
         self.assertTrue(mock_sys.called)
 
     @patch("rate_partitions.sys.exit")
@@ -32,7 +32,7 @@ class TestFunctions(TestCase):
 
         We will not exit with error
         """
-        verify_divnum(2.5)
+        verify_divfactor(2.5)
         self.assertFalse(mock_sys.called)
 
     def test_generate_sites__first_partition(self):
@@ -42,7 +42,7 @@ class TestFunctions(TestCase):
             partition=1,
             upper_value=max(self.input_data),
             min_rate=min(self.input_data),
-            divnum=2.5,
+            divfactor=2.5,
         )
         expected_sites, expected_lower_value = [1, 2, 3, 4], 0.64
         self.assertEqual(expected_sites, result[0])
@@ -61,8 +61,26 @@ class TestFunctions(TestCase):
             partition=2,
             upper_value=0.64,
             min_rate=min(self.input_data),
-            divnum=2.5,
+            divfactor=2.5,
         )
         expected_sites, expected_lower_value = [5, 6], 0.47
         self.assertEqual(expected_sites, result[0])
         self.assertAlmostEqual(expected_lower_value, round(result[1], 2))
+
+    def test_add_partitions_output(self):
+        output_mrb = ""
+        output_phy = ""
+        partition = 1
+        sites = [1, 2, 3, 4]
+        result_mrb, result_phy = add_partitions_output(output_mrb, output_phy, partition, sites)
+
+        expected_mrb = "Charset Partition_1 = 1 2 3 4;"
+        self.assertIn(expected_mrb, result_mrb)
+
+        expected_phy = "DNA, Partition_1 = 1, 2, 3, 4"
+        self.assertIn(expected_phy, result_phy)
+
+    def test_generate_partition_list(self):
+        result = generate_partition_list(bin_count=4)
+        expected = "Partition_1, Partition_2, Partition_3, Partition_4"
+        self.assertEqual(expected, result)
