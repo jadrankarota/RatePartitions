@@ -1,6 +1,6 @@
 """
 rate_partitions.py
-Written by: T Malm - 20120922
+Written by: T Malm and C Peña - 20180517
 Script to read a TIGER rate file (or other rate files) and produce partitions
 from the rates usable for analyses.
 
